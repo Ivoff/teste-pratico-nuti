@@ -22,7 +22,7 @@ BEGIN
                     flight_date AND (flight_date + interval '||quote_literal('1h')||' * flight_duration)
                 ) OR
                 $4 <> (
-                    SELECT aux.flight_city_destiny
+                    SELECT aux0.flight_city_destiny
                     FROM (
                         SELECT flight_city_destiny, MAX(flight_date)
                         FROM flight
@@ -30,11 +30,11 @@ BEGIN
                             flight_plane_id = $1 AND
                             flight_date < $2
                         GROUP BY flight.flight_city_destiny
-                    ) aux
+                    ) aux0
                     LIMIT 1
                 ) OR
                 $5 <> (
-                    SELECT aux.flight_city_origin
+                    SELECT aux1.flight_city_origin
                     FROM (
                         SELECT flight_city_origin, MIN(flight_date)
                         FROM flight
@@ -42,7 +42,7 @@ BEGIN
                             flight_plane_id = $1 AND
                             flight_date > $2
                         GROUP BY flight.flight_city_origin
-                    ) aux
+                    ) aux1
                     LIMIT 1
                 )
             )' USING 
@@ -55,27 +55,26 @@ BEGIN
     FETCH conflict INTO current_conflict;    
 
     IF current_conflict.flight_id IS NULL THEN
-        RAISE EXCEPTION 'voo invalido';
+        RAISE EXCEPTION 'passou';
         RETURN NEW;
     ELSE
-        RAISE EXCEPTION 'passou';
-        
         current_error_id := nextval('error_attempt_sequence');
         INSERT INTO flight_error(flight_error_attempt, flight_error_flight)
         VALUES(current_error_id, current_conflict.flight_id);
 
         LOOP
-            FETCH conflict INTO current_conflict;
+            FETCH conflict INTO current_conflict;            
             
             IF NOT FOUND THEN 
                 EXIT; 
-            END IF;
-
-            current_error_id := nextval('error_attempt_sequence');
-
+            END IF;            
+            
             INSERT INTO flight_error(flight_error_attempt, flight_error_flight)
             VALUES(current_error_id, current_conflict.flight_id);
         END LOOP;
+        
+        NEW := NULL;
+        RETURN NEW;
     END IF;
 END;
 $insert_flight$ LANGUAGE plpgsql;

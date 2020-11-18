@@ -1,3 +1,4 @@
+-- a cidade de destino não pode ser diferente da cidade do próximo voo desse avião
 INSERT INTO flight (
 flight_plane_id,
 flight_city_origin,
