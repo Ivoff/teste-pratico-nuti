@@ -12,7 +12,8 @@ class Flight extends Model {
         this.date = date;
         this.duration = duration;
     }
-    async checkTimeAvailability() {
+
+    async checkTimeAvailability() {        
         const sql = `
         SELECT flight.*
         FROM flight
@@ -22,12 +23,16 @@ class Flight extends Model {
                     flight_date AND (flight_date + interval '1h' * flight_duration)
                 ) OR
                 (($2 + interval '1h' * $3) BETWEEN 
-                    flight_date AND (flight_date + interval 1h' * flight_duration)
+                    flight_date AND (flight_date + interval '1h' * flight_duration)
                 )
             )`;
-
-        const {rows} = await con.query(sql, [this.id, this.date, this.duration]);
-        console.log(rows);
+        try {            
+            const result = await con.query(sql, [this.plane.id, this.date, this.duration]);
+            return result;
+        } catch(err) {
+            console.trace(err);
+            return;
+        }    
     }
 
     async checkLocalityAvailability() {
@@ -59,27 +64,41 @@ class Flight extends Model {
                 ) aux1
                 LIMIT 1
             )`;
-
-        const { rows } = await con.query(sql, [
-            this.id, 
-            this.date, 
-            this.city_origin, 
-            this.city_destiny, 
-            this.duration
-        ]);
-        console.log(rows);
+        try {
+            const result = await con.query(sql, [
+                this.plane.id, 
+                this.date, 
+                this.city_origin.id, 
+                this.city_destiny.id, 
+                this.duration
+            ]);
+            return result;
+        } catch(err) {
+            console.trace(err);
+            return;
+        }
     }    
 
-    save() {
-        this.checkLocalityAvailability();
-        this.checkTimeAvailability();
-        return;
-        super.save(Flight, this);
+    async save() {
+        const timeConflicts = await this.checkTimeAvailability();
+        const localityConflicts = await this.checkLocalityAvailability();
+        
+        if (timeConflicts.rowCount || localityConflicts.rowCount) {
+            console.log('voo invalido');
+            return {
+                time_conflicts: timeConflicts.rows,
+                locality_conflicts: localityConflicts.rows
+            };
+        }
+
+        return super.save(Flight, this);
     }
 
-    delete() {super.delete(Flight, this);}
+    delete() {return super.delete(Flight, this);}
 
-    read() {super.read(Flight, this);}
+    async read() {return super.read(Flight, this);}
+
+    all() {return super.all(Flight, this);}
 }
 
 module.exports = { Flight };

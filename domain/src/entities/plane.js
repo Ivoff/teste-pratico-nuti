@@ -9,9 +9,11 @@ class Plane extends Model {
 
     save() {return super.save(Plane, this);}
 
-    delete() {super.delete(Plane, this);}
+    delete() {return super.delete(Plane, this);}
 
-    read() {super.read(Plane, this);}
+    async read() {return super.read(Plane, this);}
+
+    all() {return super.all(Plane, this)}
 }
 
-module.exports = {Plane};
+module.exports = { Plane };

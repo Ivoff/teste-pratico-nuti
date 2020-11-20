@@ -11,7 +11,12 @@ class City extends Model {
 
     delete() {return super.delete(City, this);}
 
-    read() {return super.read(City, this);}
+    async read() {
+        const result = await super.read(City, this);
+        return result;
+    }
+
+    all() {return super.all(City, this);}
 }
 
 module.exports = { City };
