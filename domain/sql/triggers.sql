@@ -14,7 +14,7 @@ BEGIN
         SELECT flight.*     
         FROM flight
         WHERE 
-            flight_plane_id = $1 AND (
+            flight_plane = $1 AND (
                 ($2 BETWEEN 
                     flight_date AND (flight_date + interval '||quote_literal('1h')||' * flight_duration)
                 ) OR
@@ -27,7 +27,7 @@ BEGIN
                         SELECT flight_city_destiny, MAX(flight_date)
                         FROM flight
                         WHERE 
-                            flight_plane_id = $1 AND
+                            flight_plane = $1 AND
                             flight_date < $2
                         GROUP BY flight.flight_city_destiny
                     ) aux0
@@ -39,14 +39,14 @@ BEGIN
                         SELECT flight_city_origin, MIN(flight_date)
                         FROM flight
                         WHERE 
-                            flight_plane_id = $1 AND
+                            flight_plane = $1 AND
                             flight_date > $2
                         GROUP BY flight.flight_city_origin
                     ) aux1
                     LIMIT 1
                 )
             )' USING 
-                NEW.flight_plane_id,
+                NEW.flight_plane,
                 NEW.flight_date,
                 NEW.flight_duration,
                 NEW.flight_city_origin,
@@ -54,8 +54,7 @@ BEGIN
     
     FETCH conflict INTO current_conflict;    
 
-    IF current_conflict.flight_id IS NULL THEN
-        RAISE EXCEPTION 'passou';
+    IF current_conflict.flight_id IS NULL THEN        
         RETURN NEW;
     ELSE
         current_error_id := nextval('error_attempt_sequence');
