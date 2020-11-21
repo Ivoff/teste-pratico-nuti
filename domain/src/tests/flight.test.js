@@ -6,8 +6,8 @@ afterAll( async () => {
     await con.end();
 });
 
-describe('Failures', () => {
-    test('testa conflito do horario com outro voo', async () => {
+describe('Conflito Horário', () => {
+    test('Testa o conflito do horário mais a duração do novo voo com os outros. Deve Falhar', async () => {
         let flight = new Flight({
             id: null,
             plane: 1,
@@ -22,17 +22,22 @@ describe('Failures', () => {
             errorCode: 'time_conflict',
             data: {
                 time_conflicts: [
-                    {
+                    new Flight({
                         id: 1,
                         plane: 1,
                         city_origin: 1,
                         city_destiny: 2,
-                        date: '2020-11-01 05:00',
+                        date: '2020-11-01 05:00:00',
                         duration: 4
-                    }
-                ],
-                locality_conflicts: []
+                    })
+                ]                
             }
         })
     });
+
 });
+
+
+    // test('Testa conflicto ', async () => {
+
+    // });

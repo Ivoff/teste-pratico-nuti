@@ -1,5 +1,5 @@
 const Controller = require('./controller');
-const City = require('../entities/plane');
+const City = require('../entities/city');
 
 class CityController extends Controller {
     constructor() {

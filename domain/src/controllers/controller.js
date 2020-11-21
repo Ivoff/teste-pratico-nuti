@@ -3,7 +3,7 @@ const utils = require('../utils');
 const pgErrorMessages = require('../exceptions/pgErrorMessages');
 
 class Controller {
-    actions = [
+    static actions = [
         {
             create: { verb: 'post', params: [] }
         },
@@ -15,6 +15,9 @@ class Controller {
         },
         {
             delete: { verb: 'get', params: [':id'] }
+        },
+        {
+            all: { verb: 'get', params: [] }
         }
     ];
 
@@ -28,27 +31,27 @@ class Controller {
             }
         } catch(e) {
             console.trace(e);
-            return;
+            process.exit(1);
         }
     }
 
-    async save(req, res) {
+    async save(req, res) {        
         let m_object = new this.model(req.body);
         try {
             const result = await m_object.save();
+
             if (result.status) {
                 res.json(result);
             } else {
                 res.json({
                     status: result.status,
-                    message: pgErrorMessages(result.errorCode),
+                    message: pgErrorMessages('save', result.errorCode),
                     data: result.data
                 })
             }
 
-        } catch(e) {
-            const error = new Exception('Controller', `Method create from route ${this.route} deu pau`);
-            console.trace(error);            
+        } catch(e) {            
+            console.trace(e);
         }
     }
 
@@ -75,23 +78,37 @@ class Controller {
         }        
     }
 
-    async read(req, res) {
-        let m_object = new this.model();
+    async read(req, res) {        
+        let m_object = new this.model();        
         m_object.id = req.params.id;
-        await m_object.read();        
-        res.json({
-            status: true,
-            data: m_object
-        });        
+        try {
+            await m_object.read();        
+            res.json({
+                status: true,
+                data: m_object
+            });        
+        } catch(err) {
+            res.json({
+                status: err.status,
+                message: pgErrorMessages(err.errorCode)
+            });
+        }
     }
 
     async all(req, res) {
         let m_object = new this.model();
-        const result = m_object.all();        
-        res.json({
-            status: true,
-            data: result
-        });        
+        try {
+            const result = await m_object.all();                                
+            res.json({
+                status: true,
+                data: result
+            }); 
+        } catch (err) {
+            res.json({
+                status: err.status,
+                message: pgErrorMessages(err.errorCode)
+            });
+        }
     }
 }
 

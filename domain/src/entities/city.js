@@ -4,7 +4,7 @@ class City extends Model {
     id      = null;
     name    = null;
     
-    constructor() {
+    constructor(data) {
         super();
         Object.assign(this, data);
     }

@@ -50,14 +50,16 @@ function rowToObject(m_class, m_object, m_rows) {
 function rowsToArrayOfObjects(m_class, m_rows) {
     const prefix = getPrefix(m_class);
     const fields = getFields(m_class, true);        
-
-    let collection = m_rows.map((row) => {
-        let aux = new m_class();
-        fields.forEach((element) => {
-            aux[element.replace(`${prefix}_`, '')] = row[element];
+    let collection = [];    
+    if (m_rows !== null && m_rows !== undefined) {
+        collection = m_rows.map((row) => {
+            let aux = new m_class();
+            fields.forEach((element) => {
+                aux[element.replace(`${prefix}_`, '')] = row[element];
+            });
+            return aux;
         });
-        return aux;
-    });
+    }            
     return collection;    
 }
 

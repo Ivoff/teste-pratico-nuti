@@ -27,6 +27,7 @@ class Model {
                 return {status: true, rowCount: rowCount};
             }
         } catch (err) {
+            console.trace(err);
             return {status: false, errorCode: err.code};
         }        
     }
@@ -54,6 +55,7 @@ class Model {
                 utils.rowToObject(m_class, m_object, rows);
             } catch (err) {
                 console.trace(err);
+                throw {status:false, errorCode: err.code};
             }            
         }
     }
@@ -62,10 +64,11 @@ class Model {
         const prefix = utils.getPrefix(m_class);
         const fields = utils.getFields(m_class);
         try {
-            const { rows } = await con.query(`SELECT * FROM ${prefix}`);
+            const { rows } = await con.query(`SELECT * FROM ${prefix}`);            
             return utils.rowsToArrayOfObjects(m_class, rows);
         } catch(err) {
             console.trace(err);
+            throw {status:false, errorCode: err.code};
         }
     }
 }

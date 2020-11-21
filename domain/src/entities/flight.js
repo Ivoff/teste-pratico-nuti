@@ -1,6 +1,7 @@
 const Model = require("./model");
 const con = require('../database.js');
 const utils = require('../utils');
+const { Exception } = require('../exceptions/exceptions');
 
 class Flight extends Model {
     id              = null;
@@ -15,16 +16,16 @@ class Flight extends Model {
         Object.assign(this, data)
     }
 
-    async checkTimeAvailability() {        
+    async timeConflicts() {        
         const sql = `
         SELECT flight.*
         FROM flight
         WHERE
             flight_plane = $1 AND (
-                ($2 BETWEEN
+                ($2::timestamp BETWEEN
                     flight_date AND (flight_date + interval '1h' * flight_duration)
                 ) OR
-                (($2 + interval '1h' * $3) BETWEEN 
+                (($2::timestamp + interval '1h' * $3) BETWEEN 
                     flight_date AND (flight_date + interval '1h' * flight_duration)
                 )
             )`;
@@ -33,89 +34,122 @@ class Flight extends Model {
                 this.plane.id ?? this.plane, 
                 this.date, 
                 this.duration
-            ]);
-            return result;
+            ]);            
+            return {
+                rowCount: result.rowCount,
+                data: utils.rowsToArrayOfObjects(Flight, result.rows)
+            }
         } catch(err) {
             console.trace(err);
-            return;
+            throw new Exception('FlightVerificationExecption', 'deu pau na verificacao de localidade de voos', err);
         }    
     }
 
-    async checkLocalityAvailability() {
-        const sql = `
-        SELECT flight.*
-        FROM flight
-        WHERE
-            flight_plane = $1 AND (            
-                $3 <> (
-                    SELECT aux0.flight_city_destiny
-                    FROM (
-                        SELECT flight_city_destiny, MAX(flight_date)
-                        FROM flight
-                        WHERE 
-                            flight_plane = $1 AND
-                            flight_date < $2
-                        GROUP BY flight.flight_city_destiny
-                    ) aux0
-                    LIMIT 1
-                ) OR
-                $4 <> (
-                    SELECT aux1.flight_city_origin
-                    FROM (
-                        SELECT flight_city_origin, MIN(flight_date)
-                        FROM flight
-                        WHERE 
-                            flight_plane = $1 AND
-                            flight_date > $2 + interval '1h' * $5
-                        GROUP BY flight.flight_city_origin
-                    ) aux1
-                    LIMIT 1
-                )
-            )
+    async localityConflicts() {
+        
+        const sqlPreviousFlightConflict = `
+        SELECT *
+        FROM 
+            flight 
+            INNER JOIN (
+                SELECT             
+                    flight.flight_id AS id,       
+                    flight.flight_city_destiny AS city_destiny,
+                    flight.flight_date AS date
+                FROM flight
+                WHERE
+                    flight_plane = $1 AND
+                    flight_date < $2::timestamp 
+                GROUP BY
+                    flight.flight_id,        
+                    flight.flight_city_destiny, 
+                    flight.flight_date
+                ORDER BY flight_date DESC
+                LIMIT 1
+            ) AS next_flight
+            ON (flight.flight_id = next_flight.id AND $3 <> next_flight.city_destiny)                    
         LIMIT 1`;
+
+        const sqlNextFlightConflict = `
+        SELECT *
+        FROM 
+            flight 
+            INNER JOIN (
+                SELECT             
+                    flight.flight_id AS id,       
+                    flight.flight_city_origin AS city_origin,
+                    flight.flight_date AS date
+                FROM flight
+                WHERE
+                    flight_plane = $1 AND
+                    flight_date > $2::timestamp + interval '1h' * $4 
+                GROUP BY
+                    flight.flight_id,        
+                    flight.flight_city_origin, 
+                    flight.flight_date
+                ORDER BY flight_date ASC
+                LIMIT 1
+            ) AS next_flight
+            ON (flight.flight_id = next_flight.id AND $3 <> next_flight.city_origin)                    
+        LIMIT 1`;      
+                
         try {
-            const result = await con.query(sql, [
-                this.plane.id ?? this.plane, 
-                this.date, 
-                this.city_origin.id ?? this.city_origin, 
-                this.city_destiny.id ?? this.city_destiny, 
+            
+            const resultBefore = await con.query(sqlPreviousFlightConflict, [
+                this.plane.id ?? this.plane,
+                this.date,
+                this.city_origin.id ?? this.city_origin,
+            ]);
+
+            const resultAfter = await con.query(sqlNextFlightConflict, [
+                this.plane.id ?? this.plane,
+                this.date,
+                this.city_destiny.id ?? this.city_destiny,
                 this.duration
             ]);
-            return result;
+            
+            return {
+                rowCount: resultAfter.rowCount + resultBefore.rowCount,
+                data: {                    
+                    previous_flight: utils.rowsToArrayOfObjects(Flight, resultBefore.rows),
+                    next_flight: utils.rowsToArrayOfObjects(Flight, resultAfter.rows),
+                }
+            };
+
         } catch(err) {
             console.trace(err);
-            return;
-        }
-    }    
-
-    async save() {        
-        if (this.id === undefined || this.id === null) {
-            const timeConflicts = await this.checkTimeAvailability();
-            const localityConflicts = await this.checkLocalityAvailability();
-        
-            if (timeConflicts.rowCount || localityConflicts.rowCount) {
-                let code = '';
-
-                if (timeConflicts.rowCount && localityConflicts.rowCount) {
-                    code = 'generic_conflict';
-                } else if (timeConflicts.rowCount) {
-                    code = 'time_conflict';
-                } else {
-                    code = 'locality_conflict';
-                }
-
-                return {
-                    status: false,
-                    errorCode: code,
-                    data: {                    
-                        time_conflicts: utils.rowsToArrayOfObjects(Flight, timeConflicts.rows),
-                        locality_conflicts: utils.rowsToArrayOfObjects(Flight, localityConflicts.rows)
-                    }                
-                };
-            }
+            throw new Exception('FlightVerificationExecption', 'deu pau na verificacao de localidade de voos', err);
         }        
+    }
 
-        return super.save(Flight, this);
+    async save() {            
+        if (this.id === undefined || this.id === null) {
+            try {                                                
+                const timeConflicts = await this.timeConflicts();                
+                if (timeConflicts.rowCount) {                                   
+                    return {
+                        status: false,
+                        errorCode: 'time_conflict',
+                        data: { time_conflicts: timeConflicts.data }                
+                    };
+
+                } else {
+                    const localityConflicts = await this.localityConflicts();                    
+                    if (localityConflicts.rowCount) {
+                        return {
+                            status: false,
+                            errorCode: 'locality_conflicts',
+                            data: { locality_conflicts: localityConflicts.data }                
+                        };
+
+                    } else {                        
+                        return super.save(Flight, this);
+                    }
+                }
+            } catch(err) {
+                throw err;
+            }
+        }                
     }
 
     delete() {return super.delete(Flight, this);}

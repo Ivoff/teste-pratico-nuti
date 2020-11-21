@@ -13,8 +13,8 @@ class Router {
         this.app.use('/', router);
     }
 
-    generateRoutes(m_router, m_route, m_controller) {           
-        (new m_controller).actions.forEach(function(element) {
+    generateRoutes(m_router, m_route, m_controller) {        
+        m_controller.actions.forEach(function(element) {
             const method = Object.keys(element)[0];
             const verb = element[method].verb;
             const params = (
