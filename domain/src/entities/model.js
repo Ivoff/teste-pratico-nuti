@@ -4,24 +4,31 @@ const utils = require('../utils');
 class Model {
     constructor() {}
 
-    save(m_class, m_object) {        
-        const prefix = utils.getPrefix(m_class);        
+    async save(m_class, m_object) {        
+        const prefix = utils.getPrefix(m_class);
         const fields = utils.getFields(m_class);        
         
-        if (m_object.id === undefined || m_object.id === null) {
-            const sql = `INSERT INTO ${prefix}(${fields.join(', ')}) 
-            VALUES (${fields.map((element, index) => `$${index+1}`).join(', ')})`;
-            
-            return con.query(sql, utils.getFieldsValues(fields, m_object));
-        } else {
-            const sql = `UPDATE ${prefix} 
-            SET ${fields.map(function(element, index){
-                return `${element} = $${index+1}`;
-            }).join(', ')}
-            WHERE ${prefix}_id = ${m_object.id}`;
-            
-            return con.query(sql, utils.getFieldsValues(fields, m_object));            
-        }
+        try {
+            if (m_object.id === undefined || m_object.id === null) {
+                const sql = `INSERT INTO ${prefix}(${fields.join(', ')}) 
+                VALUES (${fields.map((element, index) => `$${index+1}`).join(', ')})`;
+    
+                const { rowCount } = await con.query(sql, utils.getFieldsValues(fields, m_object));
+                return {status: true, rowCount: rowCount};
+    
+            } else {
+                const sql = `UPDATE ${prefix} 
+                SET ${fields.map(function(element, index){
+                    return `${element} = $${index+1}`;
+                }).join(', ')}
+                WHERE ${prefix}_id = ${m_object.id}`;
+                
+                const { rowCount } = await con.query(sql, utils.getFieldsValues(fields, m_object));
+                return {status: true, rowCount: rowCount};
+            }
+        } catch (err) {
+            return {status: false, errorCode: err.code};
+        }        
     }
 
     async delete(m_class, m_object) {
@@ -30,9 +37,10 @@ class Model {
         if (m_object.id !== undefined && m_object.id !== null) {
             try {
                 const { rowCount } = await con.query(`DELETE FROM ${prefix} WHERE ${prefix}_id = ${m_object.id}`);
-                return rowCount;
+                return {status: true, rowCount: rowCount};
             } catch(err) {
                 console.trace(err);
+                return {status: false, errorCode: error.code};
             }
         }
     }
@@ -43,7 +51,7 @@ class Model {
         if (m_object.id !== undefined && m_object.id !== null) {
             try {
                 const { rows } = await con.query(`SELECT * FROM ${prefix} WHERE ${prefix}_id = ${m_object.id}`);
-                utils.rowToObject(m_class, m_object, rows);                
+                utils.rowToObject(m_class, m_object, rows);
             } catch (err) {
                 console.trace(err);
             }            
@@ -62,4 +70,4 @@ class Model {
     }
 }
 
-module.exports = { Model };
+module.exports = Model;

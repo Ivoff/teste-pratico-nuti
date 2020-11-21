@@ -6,6 +6,7 @@ services:
     volumes:
       - ./domain/data:/var/lib/postgresql/data
       - ./domain/sql/ddl.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./domain/sql/test_ddl.sql:/docker-entrypoint-initdb.d/init_test_db.sql
     ports:
       - 5423:5432    
     environment:            

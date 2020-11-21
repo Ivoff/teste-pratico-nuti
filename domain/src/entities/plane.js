@@ -1,10 +1,12 @@
-const {Model} = require("./model");
+const Model = require("./model");
 
 class Plane extends Model {
-    constructor(id, name) {
+    id      = null;
+    name    = null;
+    
+    constructor(data) {
         super();
-        this.id = id;
-        this.name = name;
+        Object.assign(this, data);
     }
 
     save() {return super.save(Plane, this);}
@@ -16,4 +18,4 @@ class Plane extends Model {
     all() {return super.all(Plane, this)}
 }
 
-module.exports = { Plane };
+module.exports = Plane;

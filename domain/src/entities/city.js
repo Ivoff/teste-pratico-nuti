@@ -1,22 +1,21 @@
-const {Model} = require("./model");
+const Model = require("./model");
 
 class City extends Model {
-    constructor(id, name) {
+    id      = null;
+    name    = null;
+    
+    constructor() {
         super();
-        this.id = id;
-        this.name = name;
+        Object.assign(this, data);
     }
 
     save() {return super.save(City, this);}
 
     delete() {return super.delete(City, this);}
 
-    async read() {
-        const result = await super.read(City, this);
-        return result;
-    }
+    async read() {return super.read(City, this);}
 
     all() {return super.all(City, this);}
 }
 
-module.exports = { City };
+module.exports = City;

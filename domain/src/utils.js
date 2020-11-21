@@ -8,11 +8,14 @@ function getPrefix(m_class) {
     return m_class.name.toLowerCase();
 }
 
-function getFields(m_class) {    
+function getFields(m_class, with_id) {    
     const prefix = getPrefix(m_class);    
 
     let aux = Object.getOwnPropertyNames(new m_class);            
-    aux.splice((aux.indexOf('id')), 1);
+
+    with_id = with_id ?? false;
+    if (!with_id)
+        aux.splice((aux.indexOf('id')), 1);
     
     return aux.map(function(element){
         return `${prefix}_${camelToSnakeCase(element)}`;
@@ -29,6 +32,12 @@ function getFieldsValues(m_fields, m_object) {
     })
 }
 
+function isModelInherited(m_class) {
+    if (typeof m_class !== 'function')
+        return false;
+    return Object.getPrototypeOf((new m_class).constructor).name === 'Model';            
+}
+
 function rowToObject(m_class, m_object, m_rows) {
     const prefix = getPrefix(m_class);
     const fields = getFields(m_class);
@@ -40,7 +49,7 @@ function rowToObject(m_class, m_object, m_rows) {
 
 function rowsToArrayOfObjects(m_class, m_rows) {
     const prefix = getPrefix(m_class);
-    const fields = getFields(m_class);        
+    const fields = getFields(m_class, true);        
 
     let collection = m_rows.map((row) => {
         let aux = new m_class();
@@ -55,7 +64,8 @@ function rowsToArrayOfObjects(m_class, m_rows) {
 module.exports = {
     rowsToArrayOfObjects,
     camelToSnakeCase,
-    getFieldsValues,
+    isModelInherited,
+    getFieldsValues,    
     rowToObject,
     getPrefix,
     getFields  

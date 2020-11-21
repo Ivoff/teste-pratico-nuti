@@ -1,16 +1,18 @@
-const {Model} = require("./model");
+const Model = require("./model");
 const con = require('../database.js');
-const utils = require('../utils.js');
+const utils = require('../utils');
 
 class Flight extends Model {
-    constructor(id, plane, city_origin, city_destiny, date, duration) {
+    id              = null;
+    plane           = null;
+    city_origin     = null;
+    city_destiny    = null;
+    date            = null;
+    duration        = null;
+
+    constructor(data) {
         super();
-        this.id = id;
-        this.plane = plane;
-        this.city_origin = city_origin;
-        this.city_destiny = city_destiny;
-        this.date = date;
-        this.duration = duration;
+        Object.assign(this, data)
     }
 
     async checkTimeAvailability() {        
@@ -27,7 +29,11 @@ class Flight extends Model {
                 )
             )`;
         try {            
-            const result = await con.query(sql, [this.plane.id, this.date, this.duration]);
+            const result = await con.query(sql, [
+                this.plane.id ?? this.plane, 
+                this.date, 
+                this.duration
+            ]);
             return result;
         } catch(err) {
             console.trace(err);
@@ -39,37 +45,40 @@ class Flight extends Model {
         const sql = `
         SELECT flight.*
         FROM flight
-        WHERE            
-            $3 <> (
-                SELECT aux0.flight_city_destiny
-                FROM (
-                    SELECT flight_city_destiny, MAX(flight_date)
-                    FROM flight
-                    WHERE 
-                        flight_plane = $1 AND
-                        flight_date < $2
-                    GROUP BY flight.flight_city_destiny
-                ) aux0
-                LIMIT 1
-            ) OR
-            $4 <> (
-                SELECT aux1.flight_city_origin
-                FROM (
-                    SELECT flight_city_origin, MIN(flight_date)
-                    FROM flight
-                    WHERE 
-                        flight_plane = $1 AND
-                        flight_date > $2 + interval '1h' * $5
-                    GROUP BY flight.flight_city_origin
-                ) aux1
-                LIMIT 1
-            )`;
+        WHERE
+            flight_plane = $1 AND (            
+                $3 <> (
+                    SELECT aux0.flight_city_destiny
+                    FROM (
+                        SELECT flight_city_destiny, MAX(flight_date)
+                        FROM flight
+                        WHERE 
+                            flight_plane = $1 AND
+                            flight_date < $2
+                        GROUP BY flight.flight_city_destiny
+                    ) aux0
+                    LIMIT 1
+                ) OR
+                $4 <> (
+                    SELECT aux1.flight_city_origin
+                    FROM (
+                        SELECT flight_city_origin, MIN(flight_date)
+                        FROM flight
+                        WHERE 
+                            flight_plane = $1 AND
+                            flight_date > $2 + interval '1h' * $5
+                        GROUP BY flight.flight_city_origin
+                    ) aux1
+                    LIMIT 1
+                )
+            )
+        LIMIT 1`;
         try {
             const result = await con.query(sql, [
-                this.plane.id, 
+                this.plane.id ?? this.plane, 
                 this.date, 
-                this.city_origin.id, 
-                this.city_destiny.id, 
+                this.city_origin.id ?? this.city_origin, 
+                this.city_destiny.id ?? this.city_destiny, 
                 this.duration
             ]);
             return result;
@@ -79,17 +88,32 @@ class Flight extends Model {
         }
     }    
 
-    async save() {
-        const timeConflicts = await this.checkTimeAvailability();
-        const localityConflicts = await this.checkLocalityAvailability();
+    async save() {        
+        if (this.id === undefined || this.id === null) {
+            const timeConflicts = await this.checkTimeAvailability();
+            const localityConflicts = await this.checkLocalityAvailability();
         
-        if (timeConflicts.rowCount || localityConflicts.rowCount) {
-            console.log('voo invalido');
-            return {
-                time_conflicts: timeConflicts.rows,
-                locality_conflicts: localityConflicts.rows
-            };
-        }
+            if (timeConflicts.rowCount || localityConflicts.rowCount) {
+                let code = '';
+
+                if (timeConflicts.rowCount && localityConflicts.rowCount) {
+                    code = 'generic_conflict';
+                } else if (timeConflicts.rowCount) {
+                    code = 'time_conflict';
+                } else {
+                    code = 'locality_conflict';
+                }
+
+                return {
+                    status: false,
+                    errorCode: code,
+                    data: {                    
+                        time_conflicts: utils.rowsToArrayOfObjects(Flight, timeConflicts.rows),
+                        locality_conflicts: utils.rowsToArrayOfObjects(Flight, localityConflicts.rows)
+                    }                
+                };
+            }
+        }        
 
         return super.save(Flight, this);
     }
@@ -101,4 +125,4 @@ class Flight extends Model {
     all() {return super.all(Flight, this);}
 }
 
-module.exports = { Flight };
+module.exports = Flight;
