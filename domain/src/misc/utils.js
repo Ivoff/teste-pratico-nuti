@@ -63,6 +63,15 @@ function rowsToArrayOfObjects(m_class, m_rows) {
     return collection;    
 }
 
+function isObjEmpty(m_object) {
+    if (m_object.constructor === Object) {
+        return Object.keys(m_object).length === 0;
+    } else {
+        console.trace('Argumento passado nao eh um objeto');
+        return false;
+    }
+}
+
 module.exports = {
     rowsToArrayOfObjects,
     camelToSnakeCase,
@@ -70,5 +79,6 @@ module.exports = {
     getFieldsValues,    
     rowToObject,
     getPrefix,
-    getFields  
+    getFields,
+    isObjEmpty
 }

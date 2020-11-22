@@ -1,6 +1,6 @@
 const { Exception } = require('../exceptions/exceptions');
 const utils = require('../misc/utils');
-const pgErrorMessages = require('../exceptions/pgErrorMessages');
+const errorMessages = require('../exceptions/errorMessages');
 
 class Controller {
     static actions = [
@@ -45,7 +45,7 @@ class Controller {
             } else {
                 res.json({
                     status: result.status,
-                    message: pgErrorMessages('save', result.errorCode),
+                    message: errorMessages(result.errorCode, 'save'),
                     data: result.data
                 })
             }
@@ -73,7 +73,7 @@ class Controller {
         } else {
             res.json({
                 status: result.status,
-                message: pgErrorMessages(result.errorCode)
+                message: errorMessages(result.errorCode)
             });
         }        
     }
@@ -90,23 +90,23 @@ class Controller {
         } catch(err) {
             res.json({
                 status: err.status,
-                message: pgErrorMessages(err.errorCode)
+                message: errorMessages(err.errorCode)
             });
         }
     }
 
-    async all(req, res) {
+    async all(req, res) {        
         let m_object = new this.model();
         try {
-            const result = await m_object.all();
+            const result = await m_object.all(req.body);            
             res.json({
                 status: true,
                 data: result
             }); 
-        } catch (err) {
+        } catch (err) {            
             res.json({
                 status: err.status,
-                message: pgErrorMessages(err.errorCode)
+                message: errorMessages(err.errorCode, 'all')
             });
         }
     }

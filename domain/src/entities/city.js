@@ -9,13 +9,13 @@ class City extends Model {
         Object.assign(this, data);
     }
 
-    save() {return super.save(City, this);}
+    async save() {return super.save(City, this);}
 
-    delete() {return super.delete(City, this);}
+    async delete() {return super.delete(City, this);}
 
     async read() {return super.read(City, this);}
 
-    all() {return super.all(City, this);}
+    static async all(obj) {return super.all(City, obj);}
 }
 
 module.exports = City;

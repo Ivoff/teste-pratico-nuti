@@ -9,13 +9,15 @@ class Plane extends Model {
         Object.assign(this, data);
     }
 
-    save() {return super.save(Plane, this);}
+    async save() {return super.save(Plane, this);}
 
-    delete() {return super.delete(Plane, this);}
+    async delete() {return super.delete(Plane, this);}
 
     async read() {return super.read(Plane, this);}
 
-    all() {return super.all(Plane, this)}
+    async all(obj) {
+        return super.all(Plane, obj);        
+    }
 }
 
 module.exports = Plane;

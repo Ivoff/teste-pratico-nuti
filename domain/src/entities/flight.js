@@ -41,7 +41,7 @@ class Flight extends Model {
             }
         } catch(err) {
             console.trace(err);
-            throw new Exception('FlightVerificationExecption', 'deu pau na verificacao de localidade de voos', err);
+            throw err;
         }    
     }
 
@@ -118,7 +118,7 @@ class Flight extends Model {
 
         } catch(err) {
             console.trace(err);
-            throw new Exception('FlightVerificationExecption', 'deu pau na verificacao de localidade de voos', err);
+            throw err;
         }        
     }
 
@@ -152,11 +152,11 @@ class Flight extends Model {
         }                
     }
 
-    delete() {return super.delete(Flight, this);}
+    async delete() {return super.delete(Flight, this);}
 
     async read() {return super.read(Flight, this);}
 
-    all() {return super.all(Flight, this);}
+    static async all(obj) {return super.all(Flight, obj);}
 }
 
 module.exports = Flight;
