@@ -1,5 +1,5 @@
 const { Exception } = require('../exceptions/exceptions');
-const utils = require('../utils');
+const utils = require('../misc/utils');
 const pgErrorMessages = require('../exceptions/pgErrorMessages');
 
 class Controller {
@@ -98,7 +98,7 @@ class Controller {
     async all(req, res) {
         let m_object = new this.model();
         try {
-            const result = await m_object.all();                                
+            const result = await m_object.all();
             res.json({
                 status: true,
                 data: result

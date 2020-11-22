@@ -1,4 +1,3 @@
 domain/src/node_modules
-domain/src/package-lock.json
 domain/data
-
+domain/src/.env

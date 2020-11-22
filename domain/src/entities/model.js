@@ -1,5 +1,5 @@
-const con = require('../database');
-const utils = require('../utils');
+const con = require('../database/database');
+const utils = require('../misc/utils');
 
 class Model {
     constructor() {}

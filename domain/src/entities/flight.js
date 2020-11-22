@@ -1,6 +1,6 @@
 const Model = require("./model");
-const con = require('../database.js');
-const utils = require('../utils');
+const con = require('../database/database.js');
+const utils = require('../misc/utils');
 const { Exception } = require('../exceptions/exceptions');
 
 class Flight extends Model {

@@ -10,7 +10,7 @@ const pgCodeMessages = {
 }
 
 function pgErrorMessages(action, errorCode) {
-    return (pgCodeMessages[action][errorCode] === undefined ? 
+    return (pgCodeMessages[action][errorCode] === undefined || errorCode === undefined ? 
         'Algo de errado aconteceu... LOL' : 
         pgCodeMessages[action][errorCode]);
 }
