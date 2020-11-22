@@ -15,7 +15,7 @@ class City extends Model {
 
     async read() {return super.read(City, this);}
 
-    static async all(obj) {return super.all(City, obj);}
+    async all(obj) {return super.all(City, obj);}
 }
 
 module.exports = City;

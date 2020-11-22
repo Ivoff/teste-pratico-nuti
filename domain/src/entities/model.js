@@ -67,7 +67,7 @@ class Model {
         
         try {
             if (utils.isObjEmpty(m_object)) {
-                const { rows } = await con.query(`SELECT * FROM ${prefix}`);            
+                const { rows } = await con.query(`SELECT * FROM ${prefix} ORDER BY ${prefix}_id ASC`);            
                 return utils.rowsToArrayOfObjects(m_class, rows);
 
             } else {                
@@ -85,15 +85,13 @@ class Model {
                 
                 if (!values.length || !statements.length || (values.length !== statements.length)) {
                     throw { code: 'req_attribute_mismatch' };
-                }
-                
+                }                     
                 const { rows } = await con.query(`
                 SELECT * 
                 FROM ${prefix} 
                 WHERE
                     ${statements.join(' AND ')}
-                `, values);
-
+                ORDER BY ${prefix}_id ASC`, values);
                 return utils.rowsToArrayOfObjects(m_class, rows);
             }         
         } catch(err) {
