@@ -257,7 +257,7 @@
 				if (data.status) {                
                     this.flights = data.data;
                 } else {
-                    alert(data.message ?? "Algo de errado aconteceu durante a busca de avioes");
+                    alert(data.message ?? "Algo de errado aconteceu durante a busca de voos");
 				}				
 			},
 			resetFormAndModel() {
