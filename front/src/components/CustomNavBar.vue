@@ -1,11 +1,11 @@
 <template>
     <div>
         <b-navbar type="dark" variant="dark">            
-            <b-row>
-                <b-col v-for="route in routes" :key="route.path" >
-                    <b-nav-item :to="route.path" >{{route.name}}</b-nav-item>                        
-                </b-col>
-            </b-row>
+            <b-navbar type="dark" variant="dark">
+                <b-navbar-nav>
+                    <b-nav-item class="mr-5" v-for="route in routes" :key="route.path" :to="route.path">{{route.name}}</b-nav-item>
+                </b-navbar-nav>
+            </b-navbar>                
         </b-navbar>
     </div>
 </template>

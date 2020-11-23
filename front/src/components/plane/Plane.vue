@@ -18,17 +18,21 @@
                 ></b-progress>
             </b-alert>            
             </div>            
-            <b-form inline @submit="onSubmit">
-                <label for="plane-name">Name</label>                
-                <b-form-input
-                    id="plane-name"
-                    v-model="toSavePlane.name"                    
-                    required
-                    placeholder="Digite o nome do novo avião"
-                ></b-form-input>                           
-                <b-button type="sumbit" variant="primary">Save</b-button>
+            <b-form @submit="onSubmit">
+                <b-form-group                
+                label="Avião:"
+                label-align-sm="left"
+                label-for="plane-name"                
+                >
+                    <b-form-input
+                        id="plane-name"
+                        v-model="toSavePlane.name"
+                        placeholder="Nome do aviao"                        
+                    ></b-form-input>
+                </b-form-group>                
+                <b-button block type="sumbit" variant="success">Save</b-button>
             </b-form>
-            <b-table striped hover :items="planes" :fields="fields" :busy="loading">
+            <b-table class="mt-5" striped hover :items="planes" :fields="fields" :busy="loading">
                 <template #table-busy>
                     <div class="text-center text-info my-2">
                         <b-spinner class="align-middle"></b-spinner>
@@ -74,21 +78,21 @@
                 this.loading = true;
                 const { data } = await axios({
                     method: 'get',
-                    url: `${process.env.VUE_APP_DOMAIN}${process.env.VUE_APP_PORT}/plane/delete/${planeObj.id}`
+                    url: `${this.$DOMAIN}${this.$PORT}/plane/delete/${planeObj.id}`
                 });
-                this.posRequestMessage(data, 'Aviao deletado com sucesso');
-                this.fetchPlanes();
+                this.postRequestMessage(data, 'Aviao deletado com sucesso');
+                this.fetchPlanes();                
             },
             async fetchPlanes() {
                 const { data } = await axios({
                     method: 'get',
-                    url: `${process.env.VUE_APP_DOMAIN}${process.env.VUE_APP_PORT}/plane/all`
+                    url: `${this.$DOMAIN}${this.$PORT}/plane/all`
                 });            
                 if (data.status) {                
                     this.planes = data.data;
                 } else {
                     alert(data.message ?? "Algo de errado aconteceu");
-                }
+                }                
             },
             async loadPlane(planeObj) {
                 this.toSavePlane.id = planeObj.id;
@@ -99,10 +103,10 @@
                 this.loading = true;                
                 const { data } = await axios({
                     method: 'post',
-                    url: `${process.env.VUE_APP_DOMAIN}${process.env.VUE_APP_PORT}/plane/create`,
+                    url: `${this.$DOMAIN}${this.$PORT}/plane/create`,
                     data: {...this.toSavePlane}
                 });                
-                this.posRequestMessage(data ,'Avião salvo com sucesso!');
+                this.postRequestMessage(data ,'Avião salvo com sucesso!');
                 this.fetchPlanes();
             },
             countDownChanged(dismissCountDown) {
@@ -111,7 +115,7 @@
             showAlert() {
                 this.dismissCountDown = this.dismissSecs
             },
-            posRequestMessage(data, successMessage) {
+            postRequestMessage(data, successMessage) {
                 this.loading = false;
                 this.toSavePlane.id = null;
                 this.toSavePlane.name = '';

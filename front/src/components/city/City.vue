@@ -18,17 +18,21 @@
                     ></b-progress>
                 </b-alert>            
             </div>            
-            <b-form inline @submit="onSubmit">
-                <label for="city-name">Name</label>                
-                <b-form-input
-                    id="city-name"
-                    v-model="toSaveCity.name"                    
-                    required
-                    placeholder="Digite o nome da nova cidade"
-                ></b-form-input>                           
-                <b-button type="sumbit" variant="primary">Save</b-button>
+            <b-form @submit="onSubmit">
+                <b-form-group                
+                label="Cidade:"
+                label-align-sm="left"
+                label-for="city-name"                
+                >
+                    <b-form-input
+                        id="city-name"
+                        v-model="toSaveCity.name"
+                        placeholder="Nome da cidade"                        
+                    ></b-form-input>
+                </b-form-group>                
+                <b-button block type="sumbit" variant="success">Save</b-button>
             </b-form>
-            <b-table striped hover :items="cities" :fields="fields" :busy="loading">
+            <b-table class="mt-5" striped hover :items="cities" :fields="fields" :busy="loading">
                 <template #table-busy>
                     <div class="text-center text-info my-2">
                         <b-spinner class="align-middle"></b-spinner>
@@ -74,22 +78,22 @@
                 this.loading = true;
                 const { data } = await axios({
                     method: 'get',
-                    url: `${process.env.VUE_APP_DOMAIN}${process.env.VUE_APP_PORT}/city/delete/${cityObj.id}`
+                    url: `${this.$DOMAIN}${this.$PORT}/city/delete/${cityObj.id}`
                 });
-                this.posRequestMessage(data, 'Cidade deletada com sucesso');
+                this.postRequestMessage(data, 'Cidade deletada com sucesso');
                 this.fetchCities();
             },
             async fetchCities() {
                 
                 const { data } = await axios({
                     method: 'get',
-                    url: `${process.env.VUE_APP_DOMAIN}${process.env.VUE_APP_PORT}/city/all`
+                    url: `${this.$DOMAIN}${this.$PORT}/city/all`
                 });            
                 if (data.status) {                
                     this.cities = data.data;
                 } else {
                     alert(data.message ?? "Algo de errado aconteceu");
-                }
+                }                
             },
             async loadCity(cityObj) {
                 this.toSaveCity.id = cityObj.id;
@@ -100,10 +104,10 @@
                 this.loading = true;                
                 const { data } = await axios({
                     method: 'post',
-                    url: `${process.env.VUE_APP_DOMAIN}${process.env.VUE_APP_PORT}/city/create`,
+                    url: `${this.$DOMAIN}${this.$PORT}/city/create`,
                     data: {...this.toSaveCity}
                 });                
-                this.posRequestMessage(data ,'Cidade salva com sucesso!');
+                this.postRequestMessage(data ,'Cidade salva com sucesso!');
                 this.fetchCities();
             },
             countDownChanged(dismissCountDown) {
@@ -112,7 +116,7 @@
             showAlert() {
                 this.dismissCountDown = this.dismissSecs
             },
-            posRequestMessage(data, successMessage) {
+            postRequestMessage(data, successMessage) {
                 this.loading = false;
                 this.toSaveCity.id = null;
                 this.toSaveCity.name = '';

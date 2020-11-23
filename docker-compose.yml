@@ -27,7 +27,18 @@ services:
     depends_on:
       - postgres
     links:
-      - "postgres:${DB_HOST}"
+      - "postgres:${DB_HOST}"    
+    
+  frontend:
+    image: node:14.15.1
+    container_name: frontend
+    volumes:
+      - ./front:/home/front   
+    working_dir: /home/front
+    command: sh -c "npm install && npm run serve -- --port ${FRONT_PORT}"
+    depends_on:
+      - backend    
+    network_mode: "host"
 
   postgres:
     image: postgres

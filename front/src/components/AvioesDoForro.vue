@@ -20,6 +20,7 @@ export default {
 
 <style scoped>
     .container {
+        width: 50%;
         height: 80%;
         position: relative;        
     }
@@ -31,6 +32,6 @@ export default {
         transform: translate(-50%, -50%);
     }
     img {
-        width: 75%;
+        width: 100%;
     }
 </style>

@@ -1,6 +1,6 @@
 <template>
-	<div id="flight">         
-		<b-container class="text-center" :key="componentKey">
+	<div id="flight">         		
+		<b-container class="text-center" :key="componentKey">						
 			<div style="height: 100px">
                 <b-alert
                 :show="dismissCountDown"
@@ -20,7 +20,7 @@
             </div>
 			<b-form @submit="onSubmit">
 				<b-form-group					
-					label="Aviao:"
+					label="Avião:"
 					label-align-sm="left"
 					label-for="flight-plane"
 				>
@@ -68,7 +68,7 @@
 				<b-row>
 					<b-col>
 						<b-form-group
-							label="Data de Descolagem:"
+							label="Data de Decolagem:"
 							label-align-sm="left"
 							label-for="flight-date"
 						>
@@ -233,7 +233,7 @@
                     this.flights = result.data.data;
                 } else {
                     alert(result.data.message ?? "Algo de errado aconteceu durante a busca de voos");
-				}
+				}				
 			},
 			async onSubmit(event) {
 				event.preventDefault();
@@ -255,10 +255,10 @@
 					url: `${this.$DOMAIN}${this.$PORT}/flight/all`,					
 				});
 				if (data.status) {                
-                    this.planes = data.data;
+                    this.flights = data.data;
                 } else {
                     alert(data.message ?? "Algo de errado aconteceu durante a busca de avioes");
-				}
+				}				
 			},
 			resetFormAndModel() {
 				this.toSaveFlight.id = null;
