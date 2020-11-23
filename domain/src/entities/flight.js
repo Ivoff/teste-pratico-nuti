@@ -2,6 +2,8 @@ const Model = require("./model");
 const con = require('../database/database.js');
 const utils = require('../misc/utils');
 const { Exception } = require('../exceptions/exceptions');
+const Plane = require("./plane");
+const City = require('./city');
 
 class Flight extends Model {
     id              = null;
@@ -13,7 +15,10 @@ class Flight extends Model {
 
     constructor(data) {
         super();
-        Object.assign(this, data)
+        Object.assign(this, data);
+        this.plane = new Plane(this.plane);
+        this.city_origin = new City(this.city_origin);
+        this.city_destiny = new City(this.city_destiny);
     }
 
     async timeConflicts() {        
@@ -156,7 +161,7 @@ class Flight extends Model {
 
     async read() {return super.read(Flight, this);}
 
-    static async all(obj) {return super.all(Flight, obj);}
+    async all(obj) {return super.all(Flight, obj);}
 }
 
 module.exports = Flight;

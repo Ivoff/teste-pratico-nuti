@@ -5,10 +5,10 @@ const utils = require('../misc/utils');
 class Model {
     constructor() {}
 
-    async save(m_class, m_object) {        
+    async save(m_class, m_object) {
         const prefix = utils.getPrefix(m_class);
         const fields = utils.getFields(m_class);        
-        
+        console.log(utils.getFieldsValues(fields, m_object));
         try {
             if (m_object.id === undefined || m_object.id === null) {
                 const sql = `INSERT INTO ${prefix}(${fields.join(', ')}) 
@@ -67,10 +67,11 @@ class Model {
         
         try {
             if (utils.isObjEmpty(m_object)) {
-                const { rows } = await con.query(`SELECT * FROM ${prefix} ORDER BY ${prefix}_id ASC`);            
+                const { rows } = await con.query(`SELECT * FROM ${prefix} ORDER BY ${prefix}_id ASC`);                            
                 return utils.rowsToArrayOfObjects(m_class, rows);
 
-            } else {                
+            } else {            
+                console.log("passou aqui");    
                 let values = [];                
                 const statements = fields.map((element, index) => {                    
                     const key = element.replace(`${prefix}_`, '');                                

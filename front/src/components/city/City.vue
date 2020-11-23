@@ -8,15 +8,15 @@
                 :variant="submitResult"
                 @dismissed="dismissCountDown=0"
                 @dismiss-count-down="countDownChanged"
-            >
-                {{submitMessage}}
-                <b-progress
-                    :variant="submitResult"
-                    :max="dismissSecs"
-                    :value="dismissCountDown"
-                    height="4px"
-                ></b-progress>
-            </b-alert>            
+                >
+                    {{submitMessage}}
+                    <b-progress
+                        :variant="submitResult"
+                        :max="dismissSecs"
+                        :value="dismissCountDown"
+                        height="4px"
+                    ></b-progress>
+                </b-alert>            
             </div>            
             <b-form inline @submit="onSubmit">
                 <label for="city-name">Name</label>                
@@ -74,16 +74,16 @@
                 this.loading = true;
                 const { data } = await axios({
                     method: 'get',
-                    url: `${process.env.VUE_APP_BASE_URL}${process.env.VUE_APP_PORT}/city/delete/${cityObj.id}`
+                    url: `${process.env.VUE_APP_DOMAIN}${process.env.VUE_APP_PORT}/city/delete/${cityObj.id}`
                 });
                 this.posRequestMessage(data, 'Cidade deletada com sucesso');
                 this.fetchCities();
             },
             async fetchCities() {
-                console.log(`${process.env.VUE_APP_BASE_URL}${process.env.VUE_APP_PORT}/city/all`);
+                console.log(`${process.env.VUE_APP_DOMAIN}${process.env.VUE_APP_PORT}/city/all`);
                 const { data } = await axios({
                     method: 'get',
-                    url: `${process.env.VUE_APP_BASE_URL}${process.env.VUE_APP_PORT}/city/all`
+                    url: `${process.env.VUE_APP_DOMAIN}${process.env.VUE_APP_PORT}/city/all`
                 });            
                 if (data.status) {                
                     this.cities = data.data;
@@ -100,7 +100,7 @@
                 this.loading = true;                
                 const { data } = await axios({
                     method: 'post',
-                    url: `${process.env.VUE_APP_BASE_URL}${process.env.VUE_APP_PORT}/city/create`,
+                    url: `${process.env.VUE_APP_DOMAIN}${process.env.VUE_APP_PORT}/city/create`,
                     data: {...this.toSaveCity}
                 });                
                 this.posRequestMessage(data ,'Cidade salva com sucesso!');
@@ -121,7 +121,7 @@
                     this.submitMessage = successMessage;
                     this.showAlert();
                 } else {
-                    this.submitResult = 'waning';
+                    this.submitResult = 'warning';
                     this.submitMessage = data.message;
                     this.showAlert();
                 }

@@ -74,7 +74,7 @@
                 this.loading = true;
                 const { data } = await axios({
                     method: 'get',
-                    url: `${process.env.VUE_APP_BASE_URL}${process.env.VUE_APP_PORT}/plane/delete/${planeObj.id}`
+                    url: `${process.env.VUE_APP_DOMAIN}${process.env.VUE_APP_PORT}/plane/delete/${planeObj.id}`
                 });
                 this.posRequestMessage(data, 'Aviao deletado com sucesso');
                 this.fetchPlanes();
@@ -82,7 +82,7 @@
             async fetchPlanes() {
                 const { data } = await axios({
                     method: 'get',
-                    url: `${process.env.VUE_APP_BASE_URL}${process.env.VUE_APP_PORT}/plane/all`
+                    url: `${process.env.VUE_APP_DOMAIN}${process.env.VUE_APP_PORT}/plane/all`
                 });            
                 if (data.status) {                
                     this.planes = data.data;
@@ -99,7 +99,7 @@
                 this.loading = true;                
                 const { data } = await axios({
                     method: 'post',
-                    url: `${process.env.VUE_APP_BASE_URL}${process.env.VUE_APP_PORT}/plane/create`,
+                    url: `${process.env.VUE_APP_DOMAIN}${process.env.VUE_APP_PORT}/plane/create`,
                     data: {...this.toSavePlane}
                 });                
                 this.posRequestMessage(data ,'Avião salvo com sucesso!');
@@ -120,7 +120,7 @@
                     this.submitMessage = successMessage;
                     this.showAlert();
                 } else {
-                    this.submitResult = 'waning';
+                    this.submitResult = 'warning';
                     this.submitMessage = data.message;
                     this.showAlert();
                 }
