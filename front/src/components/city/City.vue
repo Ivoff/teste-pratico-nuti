@@ -80,7 +80,7 @@
                 this.fetchCities();
             },
             async fetchCities() {
-                console.log(`${process.env.VUE_APP_DOMAIN}${process.env.VUE_APP_PORT}/city/all`);
+                
                 const { data } = await axios({
                     method: 'get',
                     url: `${process.env.VUE_APP_DOMAIN}${process.env.VUE_APP_PORT}/city/all`

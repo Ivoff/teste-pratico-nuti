@@ -38,11 +38,10 @@ class Controller {
     async save(req, res) {        
         let m_object = new this.model(req.body);
         try {
-            const result = await m_object.save();
-
+            const result = await m_object.save();            
             if (result.status) {
                 res.json(result);
-            } else {
+            } else {                
                 res.json({
                     status: result.status,
                     message: errorMessages(result.errorCode, 'save'),

@@ -8,7 +8,7 @@ class Model {
     async save(m_class, m_object) {
         const prefix = utils.getPrefix(m_class);
         const fields = utils.getFields(m_class);        
-        console.log(utils.getFieldsValues(fields, m_object));
+        
         try {
             if (m_object.id === undefined || m_object.id === null) {
                 const sql = `INSERT INTO ${prefix}(${fields.join(', ')}) 
@@ -70,8 +70,7 @@ class Model {
                 const { rows } = await con.query(`SELECT * FROM ${prefix} ORDER BY ${prefix}_id ASC`);                            
                 return utils.rowsToArrayOfObjects(m_class, rows);
 
-            } else {            
-                console.log("passou aqui");    
+            } else {                            
                 let values = [];                
                 const statements = fields.map((element, index) => {                    
                     const key = element.replace(`${prefix}_`, '');                                

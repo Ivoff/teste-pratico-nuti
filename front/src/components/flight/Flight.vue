@@ -81,14 +81,23 @@
 							label-align-sm="left"
 							label-for="flight-time"
 						>
-						<b-form-timepicker id="flight-time" v-model="time" locale="en"></b-form-timepicker>
+							<b-form-timepicker id="flight-time" v-model="time" locale="en"></b-form-timepicker>
+						</b-form-group>
+					</b-col>
+					<b-col>
+						<b-form-group
+							label="Duração do Voo:"
+							label-align-sm="left"
+							label-for="flight-duration"
+						>
+							<b-form-input id="flight-duration" v-model="toSaveFlight.duration" type="number" min="1"></b-form-input>
 						</b-form-group>
 					</b-col>
 				</b-row>				
 				<b-button type="sumbit" block variant="success">Save</b-button>				
 			</b-form>
 
-			<b-table striped hover :items="flights" :fields="fields" :busy="loading">
+			<b-table class="mt-5" striped hover :items="flights" :fields="fields" :busy="loading">
                 <template #table-busy>
                     <div class="text-center text-info my-2">
                         <b-spinner class="align-middle"></b-spinner>
@@ -111,8 +120,8 @@
 					<small style="color: #808080;"># {{data.item.city_destiny}}</small>
 				</template>
                 <template #cell(actions)="data">                                            
-                    <b-button class="mr-3" variant="info" @click="loadCity(data.item)">update</b-button>            
-                    <b-button variant="danger" @click="deleteCity(data.item)">delete</b-button>                                            
+                    <b-button class="mr-3" variant="info" @click="loadFlight(data.item)">update</b-button>            
+                    <b-button variant="danger" @click="deleteFlight(data.item)">delete</b-button>                                            
                 </template>
             </b-table>
 		</b-container>
@@ -160,6 +169,34 @@
 			}
 		},
 		methods: {
+			loadFlight(flightObj) {				
+				this.toSaveFlight.id = flightObj.id;
+				this.toSaveFlight.plane = {
+					id: this.findInMemory(flightObj.plane, 'plane').id,					
+					name: this.findInMemory(flightObj.plane, 'plane').name,
+				};
+				this.toSaveFlight.city_origin = {
+					id: this.findInMemory(flightObj.city_origin, 'city').id,
+					name: this.findInMemory(flightObj.city_origin, 'city').name,
+				};
+				this.toSaveFlight.city_destiny = {
+					id: this.findInMemory(flightObj.city_destiny, 'city').id,
+					name: this.findInMemory(flightObj.city_destiny, 'city').name,
+				};
+				this.toSaveFlight.date = flightObj.date;
+				this.date = flightObj.date.split(" ")[0];
+				this.time = flightObj.date.split(" ")[1];
+				this.toSaveFlight.duration = flightObj.duration;
+			},
+			async deleteFlight(flightObj) {
+				this.loading = true;
+                const { data } = await axios({
+                    method: 'get',
+                    url: `${this.$DOMAIN}${this.$PORT}/flight/delete/${flightObj.id}`
+                });
+                this.postRequestMessage(data, 'Voo deletado com sucesso');
+                this.fetchOnlyFlights();
+			},
 			findInMemory(id, type) {				
 				if (type === 'plane') {
 					return this.planes.find(element => element.id == id);
@@ -233,7 +270,8 @@
 				this.time = '';
 				this.date = '';
 			},
-			postRequestMessage(data, successMessage) {				
+			postRequestMessage(data, successMessage) {		
+				this.loading = false;		
                 if (data.status) {
                     this.submitResult = 'success';
                     this.submitMessage = successMessage;

@@ -18,7 +18,7 @@ class Flight extends Model {
         Object.assign(this, data);
         this.plane = new Plane(this.plane);
         this.city_origin = new City(this.city_origin);
-        this.city_destiny = new City(this.city_destiny);
+        this.city_destiny = new City(this.city_destiny);        
     }
 
     async timeConflicts() {        
@@ -131,7 +131,7 @@ class Flight extends Model {
         if (this.id === undefined || this.id === null) {
             try {                                                
                 const timeConflicts = await this.timeConflicts();                
-                if (timeConflicts.rowCount) {                                   
+                if (timeConflicts.rowCount) {                                
                     return {
                         status: false,
                         errorCode: 'time_conflict',
@@ -140,21 +140,27 @@ class Flight extends Model {
 
                 } else {
                     const localityConflicts = await this.localityConflicts();                    
-                    if (localityConflicts.rowCount) {
+                    if (localityConflicts.rowCount) {                        
                         return {
                             status: false,
-                            errorCode: 'locality_conflicts',
+                            errorCode: 'locality_conflict',
                             data: { locality_conflicts: localityConflicts.data }                
                         };
 
-                    } else {                        
+                    } else {                                                
                         return super.save(Flight, this);
                     }
                 }
             } catch(err) {
                 throw err;
             }
-        }                
+        } else {
+            try {
+                return super.save(Flight, this);
+            } catch (err) {
+                throw err;
+            }
+        }
     }
 
     async delete() {return super.delete(Flight, this);}
