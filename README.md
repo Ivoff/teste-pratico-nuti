@@ -4,7 +4,7 @@
 
 ## Executando
 ```
-git https://github.com/Ivoff/teste-pratico-nuti.git
+git clone https://github.com/Ivoff/teste-pratico-nuti.git
 cd ./teste-pratico-nuti
 docker-compose up frontend
 ```
